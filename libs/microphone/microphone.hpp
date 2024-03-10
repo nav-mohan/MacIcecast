@@ -74,11 +74,11 @@ Microphone<Encoder,Client>::Microphone(boost::asio::io_context& ioc) : m_userDat
         &m_userData.m_streamDesc,
         &streamDescSize
     );
-    m_userData.m_bufferByteSize = DeriveBufferSize(m_userData.m_streamDesc, 0.5);
-    printf("m_bufferByteSize = %u\n",m_userData.m_bufferByteSize);
+    // m_userData.m_bufferByteSize = DeriveBufferSize(m_userData.m_streamDesc, 0.5);
+    // printf("m_bufferByteSize = %u\n",m_userData.m_bufferByteSize);
     for(int i = 0; i < kNumberBuffers; i++)
     {
-        AudioQueueAllocateBuffer(m_userData.m_queue, m_userData.m_bufferByteSize, &m_userData.m_buffers[i]);
+        AudioQueueAllocateBuffer(m_userData.m_queue, 4096, &m_userData.m_buffers[i]); // FDK-AAC can only support 2048 samples/channel according to API documentation
         AudioQueueEnqueueBuffer(m_userData.m_queue, m_userData.m_buffers[i],0,nullptr);
     }
 }

@@ -57,14 +57,15 @@ int main()
     },mpegMic);
 
 
-    // auto aacMic = std::move(MicFactory("AAC",ioc));
-    // std::visit([](auto&& mic)
-    // {
-    //     mic->SetClient("localhost", "8000", "/RadioWestern", "hackme","audio/aac");
-    //     mic->Start();
-    // },aacMic);
+    auto aacMic = std::move(MicFactory("AAC",ioc));
+    std::visit([](auto&& mic)
+    {
+        mic->SetClient("localhost", "8000", "/RadioWestern", "hackme","audio/aac");
+        mic->Start();
+        mic->StartClient();
+    },aacMic);
     
     ioc.run();
 
-    // std::visit([](auto&& m){m->Stop();},mic);
+    // std::visit([](auto&& m){m->Stop();},aacMic);
 }
