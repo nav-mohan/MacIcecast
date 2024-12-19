@@ -184,7 +184,8 @@ void Client::DoWrite(const void *buffer, const std::size_t writeLen)
             }
             else 
             {
-                printf("DoWrite ERROR %s\n",ec.what().c_str());
+                printf("DoWrite ERROR %s: %s\n",m_endpoint.c_str(),ec.what().c_str());
+                if(ec ==  boost::system::errc::broken_pipe) DoReconnect();
             }
         }
     );
