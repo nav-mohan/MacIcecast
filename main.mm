@@ -6,6 +6,7 @@
 #include "microphone.hpp"
 #include "encoder.hpp"
 #include "client.hpp"
+#include "mslogger.hpp"
 
 // we need this for the default constructor of a std::variant
 struct DummyMicrophone
@@ -53,7 +54,7 @@ AllPossibleMicPtrs MicFactory(const std::string encoderType, boost::asio::io_con
 
 int main()
 {
-    printf("Starting...\n");
+    basic_log("Starting MacIceCast Client",INFO);
     boost::asio::io_context ioc1;
     boost::asio::io_context ioc2;
     boost::asio::io_context ioc3;

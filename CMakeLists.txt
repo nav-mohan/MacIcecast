@@ -19,15 +19,18 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 add_subdirectory(libs/microphone)
 add_subdirectory(libs/encoder)
 add_subdirectory(libs/client)
+add_subdirectory(libs/mslogger)
 
 target_include_directories(
     ${PROJECT_NAME} PRIVATE 
+    libs/mslogger
     libs/microphone
     libs/encoder
     libs/client
     )
 target_link_libraries(
     ${PROJECT_NAME} PRIVATE 
+    mslogger
     microphone
     encoder
     client
