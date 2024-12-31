@@ -63,12 +63,23 @@ struct AACEncoder
         m_aacBuffDesc.bufElSizes = &aac_bufElSizes;
         m_aacBuffDesc.bufSizes = &out_size;
 
+        basic_log("CONSTRUCTED AAC ENCODER - "
+        + std::string(m_channels == 1 ? "MONO " : "STEREO ")
+        + std::to_string(m_bitrate/1000) + "Kbps "
+        + std::to_string(m_samplerate)+ "Hz"
+        ,DEBUG); 
+
     }
 
     ~AACEncoder()
     {
         // if(outfile)         fclose(outfile);
         aacEncClose(&handle);
+        basic_log("DESTROY AAC ENCODER - "
+        + std::string(m_channels == 1 ? "Mono, " : "Stereo, ")
+        + std::to_string(m_bitrate/1000) + "Kbps "
+        + std::to_string(m_samplerate)+ "Hz"
+        ,DEBUG); 
     }	
 
 

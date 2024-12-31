@@ -15,5 +15,5 @@ set(LAME_INCLUDE_DIR ${LAME_ROOT_DIR}/include)
 set(AAC_LINK_LIBRARY ${AAC_ROOT_DIR}/lib/libfdk-aac.a)
 set(AAC_INCLUDE_DIR ${AAC_ROOT_DIR}/include)
 
-target_include_directories(encoder PUBLIC ${LAME_INCLUDE_DIR} ${AAC_INCLUDE_DIR})
+target_include_directories(encoder PUBLIC ${LAME_INCLUDE_DIR} ${AAC_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/libs/mslogger)
 target_link_libraries(encoder PRIVATE ${LAME_LINK_LIBRARY} ${AAC_LINK_LIBRARY})

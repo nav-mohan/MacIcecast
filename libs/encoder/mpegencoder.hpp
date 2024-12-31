@@ -4,6 +4,7 @@
 #include <string>
 #include <lame/lame.h>
 #include "encoderenums.hpp"
+#include "mslogger.hpp"
 
 template<
     ENCODERBITRATE eb = ENCODERBITRATE::MEDIUM ,
@@ -47,9 +48,13 @@ struct MPEGEncoder
     // FILE *outfile = nullptr;
     ~MPEGEncoder()
     {
-        printf("MPEGEncoder::~MPEGEncoder()\n");
         if(m_lgf)   lame_close(m_lgf); 
         // if(outfile) fclose(outfile);
+        basic_log("DESTROY MPEG ENCODER - "
+        + std::string(m_channels == 1 ? "MONO " : "STEREO ")
+        + std::to_string(m_bitrate) + "Kbps "
+        + std::to_string(m_samplerate)+ "Hz"
+        ,DEBUG); 
     }
 
     MPEGEncoder()
@@ -61,6 +66,12 @@ struct MPEGEncoder
         lame_set_num_channels(m_lgf,m_channels);
         lame_init_params(m_lgf);
         // outfile = fopen("hahaha.mp3","wb");
+
+        basic_log("CONSTRUCTED MPEG ENCODER - "
+        + std::string(m_channels == 1 ? "MONO " : "STEREO ")
+        + std::to_string(m_bitrate) + "Kbps "
+        + std::to_string(m_samplerate)+ "Hz"
+        ,DEBUG); 
     }
 // ----------------------------------------------------------------------
 }; // struct MPEGEncoder
