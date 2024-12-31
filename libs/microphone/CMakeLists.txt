@@ -10,6 +10,8 @@ set(
 )
 find_package(Boost REQUIRED COMPONENTS headers)
 
+target_include_directories(microphone PUBLIC ${CMAKE_SOURCE_DIR}/libs/mslogger)
+
 target_link_libraries(
     microphone PRIVATE 
     ${APPLE_FRAMEWORKS}

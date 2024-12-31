@@ -8,6 +8,7 @@
 #include <AudioToolbox/AudioToolbox.h>
 
 #include <boost/asio.hpp>
+#include "mslogger.hpp"
 
 // Custom UserData
 static const int kNumberBuffers = 3;
@@ -81,11 +82,22 @@ Microphone<Encoder,Client>::Microphone(boost::asio::io_context& ioc) : m_userDat
         AudioQueueAllocateBuffer(m_userData.m_queue, 4096, &m_userData.m_buffers[i]); // FDK-AAC can only support 2048 samples/channel according to API documentation
         AudioQueueEnqueueBuffer(m_userData.m_queue, m_userData.m_buffers[i],0,nullptr);
     }
+    basic_log("CONSTRUCT MICROPHONE - "
+    + m_userData.m_encoder.m_name + ", "
+    + std::string(m_userData.m_encoder.m_channels == 1 ? "Mono, " : "Stereo, ")
+    + std::to_string( m_userData.m_encoder.m_name == "MPEG"? m_userData.m_encoder.m_bitrate : m_userData.m_encoder.m_bitrate/1000) + " Kbps, "
+    + std::to_string(m_userData.m_encoder.m_samplerate)+ " Hz"
+    ,DEBUG); 
 }
 template <class Encoder, class Client>
 Microphone<Encoder,Client>::~Microphone()
 {
-    printf("%s::DESTROY MICROPHONE\n",m_userData.m_encoder.m_name.c_str());
+    basic_log("DESTROY MICROPHONE - "
+    + m_userData.m_encoder.m_name + ", "
+    + std::string(m_userData.m_encoder.m_channels == 1 ? " Mono, " : " Stereo, ")
+    + std::to_string( m_userData.m_encoder.m_name == "MPEG"? m_userData.m_encoder.m_bitrate : m_userData.m_encoder.m_bitrate/1000) + " Kbps, "
+    + std::to_string(m_userData.m_encoder.m_samplerate)+ " Hz"
+    ,DEBUG); 
     Stop();
 }
 
@@ -113,7 +125,7 @@ void Microphone<Encoder,Client>::Callback
 template <class Encoder, class Client>
 void Microphone<Encoder,Client>::Start()
 {
-    printf("STARTING MICROHPHEN\n");
+    basic_log("STARTING MICROHPHEN",INFO);
     m_userData.m_currentPacket = 0;
     m_userData.m_isRunning = true;
     AudioQueueStart(m_userData.m_queue, nullptr);
@@ -134,7 +146,7 @@ const uint32_t Microphone<Encoder,Client>::DeriveBufferSize(const AudioStreamBas
     const uint32_t maxBufferSize = 0x50000; // 5 * 16^4
     const uint32_t maxPacketSize = aStreamDesc.mBitsPerChannel/8;
     const float numBytesForTime = aStreamDesc.mSampleRate * maxPacketSize * seconds;
-    printf("numBytesForSie = %f\n",numBytesForTime);
+    basic_log("numBytesForSie = " + std::to_string(numBytesForTime), INFO);
     if(numBytesForTime < maxBufferSize)
         return static_cast<uint32_t>(numBytesForTime);
     return static_cast<uint32_t>(maxBufferSize);
