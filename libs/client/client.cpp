@@ -1,4 +1,5 @@
 #include "client.hpp"
+#include "mslogger.hpp"
 
 Client::Client(boost::asio::io_context& ioc) :
     ioContext_(ioc)
@@ -12,7 +13,6 @@ Client::~Client(){}
 
 void Client::SetMountpoint(const std::string host, const std::string port, const std::string endpoint, const std::string password, const std::string mime)
 {
-    printf("set Client to %s:%s/%s\n",host.c_str(),port.c_str(),endpoint.c_str());
     m_host = host;
     m_port = port;
     m_endpoint = endpoint;
@@ -33,7 +33,7 @@ void Client::SetMountpoint(const std::string host, const std::string port, const
     m_header += "Authorization: Basic ";
     m_header.append(hashed_http_auth);
     m_header += "\n\n";
-    std::cout << "authHeader ready" << std::endl;
+    basic_log("CONNECTING & AUTHENTICATING "+ m_host + ":"+ m_port + "/"+m_endpoint);
 }
 
 void Client::DoResolve()
@@ -45,17 +45,17 @@ void Client::DoResolve()
         m_host,m_port,
         [this](const boost::system::error_code& ec, boost::asio::ip::tcp::resolver::iterator endpoint_iter)
         {
-            printf("RESOLVING...\n");
+            basic_log("RESOLVING... "+ m_host + ":"+ m_port + "/"+m_endpoint);
             if(ec)
             {
                 // DoReconnect();
                 DoWait(5);
                 DoResolve();
-                printf("FAILED TO RESOLVE\n");
+                basic_log("FAILED TO RESOLVE " + ec.what(),WARN);
             }
             else
             {
-                printf("RESOLVED!\n");
+                basic_log("RESOLVED "+ m_host + ":"+ m_port + "/"+m_endpoint,INFO);
                 for (; endpoint_iter != boost::asio::ip::tcp::resolver::iterator(); ++endpoint_iter) {
                     endpoints_.push_back(*endpoint_iter);
                 }
@@ -75,15 +75,15 @@ void Client::DoConnect()
         ep,
         [this](const boost::system::error_code& ec)
         {
-            printf("CONNECTING %s:%s%s\n",m_host.c_str(),m_port.c_str(),m_endpoint.c_str());
+            basic_log("CONNECTING "+ m_host + ":"+ m_port + "/"+m_endpoint,INFO);
             if(!ec)
             {
-                printf("CONNECTED!\n");
+                basic_log("CONNECTED "+ m_host + ":"+ m_port + "/"+m_endpoint,INFO);
                 return DoAuthenticate();
             }
             else
             {
-                printf("FAILED TO CONNECT %s\n",ec.what().c_str());
+                basic_log("FAILED TO CONNECTED "+ m_host + ":"+ m_port + "/"+m_endpoint + " | " + ec.what(),WARN);
                 return DoReconnect();
             }
         }
@@ -101,12 +101,12 @@ void Client::DoAuthenticate()
         {
             if(!ec)
             {
-                printf("AUTH WROTE %s\n",buffer);
+                basic_log("AUTHENTICATED! "+ m_host + ":"+ m_port + "/"+m_endpoint + " | " + buffer ,INFO);
                 return DoReadAuthResponse();
             }
             else 
             {
-                printf("AUTH WRITE ERROR %s\n",ec.what().c_str());
+                basic_log("FAILED TO AUTHENTICATE "+ m_host + ":"+ m_port + "/"+m_endpoint + " | " + ec.what(),WARN);
             }
         }
     );
@@ -123,14 +123,14 @@ void Client::DoReadAuthResponse()
         {
             if(readErr) // this code path is only executed when the socket is disconnected. so just reconnect
             {
-                printf("AUTH ERROR %zu\n%s\n%s\n",readLen,readErr.what().c_str(),tempBuffer_);
+                basic_log("AUTH ERROR : "+ m_host + ":"+ m_port + "/"+m_endpoint + " | " + readErr.what() + " | " + std::string(tempBuffer_),WARN);
                 DoDisconnect();
                 return DoConnect();
             }
             else
             {
                 // if it returns a 401 then check response and dont try to reconnect.
-                printf("AUTH RESPONSE %zu\n%s\n",readLen,tempBuffer_);
+                basic_log("AUTH RESPONSE : "+ m_host + ":"+ m_port + "/"+m_endpoint + " | " + std::string(tempBuffer_),DEBUG);
                 std::string response(tempBuffer_);
                 if(response == "HTTP/1.1 100 Continue\r\nContent-Length: 0\r\n\r\n")
                     return DoReadAuthResponse();
@@ -157,14 +157,14 @@ void Client::DoRead()
         {
             if(readErr) // this code path is only executed when the socket is disconnected. so just reconnect
             {
-                printf("READ ERROR %zu\n%s\n%s\n",readLen,readErr.what().c_str(),tempBuffer_);
+                basic_log("READ ERROR: "+ m_host + ":"+ m_port + "/"+m_endpoint + " | " + readErr.what() + " | " + std::string(tempBuffer_),ERROR);
                 DoDisconnect();
                 return DoConnect();
             }
             else
             {
                 // if it returns a 401 then check response and dont try to reconnect.
-                printf("READ RESPONSE %zu\n%s\n",readLen,tempBuffer_);
+                basic_log("READ RESPONSE : "+ m_host + ":"+ m_port + "/"+m_endpoint + " | " + std::string(tempBuffer_),DEBUG);
                 DoRead();
             }
         }
@@ -184,7 +184,7 @@ void Client::DoWrite(const void *buffer, const std::size_t writeLen)
             }
             else 
             {
-                printf("DoWrite ERROR %s: %s\n",m_endpoint.c_str(),ec.what().c_str());
+                basic_log("WRITE ERROR : "+ m_host + ":"+ m_port + "/"+m_endpoint + " | " + ec.what(),ERROR);
                 if(ec ==  boost::system::errc::broken_pipe) DoReconnect();
             }
         }
