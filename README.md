@@ -21,3 +21,14 @@ Audio streaming software requires high performance and minimal latency to ensure
 
 This results in 12 permutations. 12 template specialization is a modest price to pay for static polymorphism !
 
+### Future work
+* Extend the `client` library with specializations for `IceCast`, `ShoutCast`, etc. 
+If `IceCast` and `ShoutCast` have vastly different packet structures, then this extension would require further template specializations such as `Microphone<Encoder<Client>`. 
+
+### References/Notes
+[Managing lifetime of `std::variant` instances](https://stackoverflow.com/questions/75779392/managing-lifetime-of-stdvariant-instances-how-to-store-pointers-to-stdvari)
+
+Playing a PCM using [FFplay](https://www.ffmpeg.org) \
+`ffplay -f s16be -ar 44100 -ac 2 hahaha.pcm`
+
+When creating a new [AudioQueueNewInput](https://developer.apple.com/documentation/audiotoolbox/audioqueuenewinput(_:_:_:_:_:_:_:)?language=objc) the [callback](https://developer.apple.com/documentation/audiotoolbox/audioqueueinputcallback?language=objc) is a `static` method. 
